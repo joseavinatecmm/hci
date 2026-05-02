@@ -1,0 +1,356 @@
+\documentclass{beamer}
+\usetheme{AnnArbor}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+
+\title{FPS, \(dt\)}
+\subtitle{Animación: Movimiento discreto en Raylib}
+\author{HCI}
+\date{April 2026}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Objetivo}
+Comprender con claridad:
+
+\begin{itemize}
+    \item Qué son los FPS.
+    \item Qué es \(dt\).
+    \item Qué ocurre al mover objetos sin \(dt\).
+    \item Qué ocurre al mover objetos con \(dt\).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Contexto del problema}
+Queremos mover un círculo sobre el eje \(x\).
+
+\medskip
+
+La posición horizontal del círculo será:
+
+\[
+x(t)
+\]
+
+donde:
+
+\begin{itemize}
+    \item \(x(t)\): posición horizontal en el tiempo \(t\).
+    \item \(t\): tiempo medido en segundos.
+    \item \(v\): velocidad horizontal.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{¿Qué son los FPS?}
+FPS significa:
+
+\[
+\text{Frames Per Second}
+\]
+
+Es decir:
+
+\[
+\text{Cuadros por segundo}
+\]
+
+\medskip
+
+Si un programa corre a 60 FPS, intenta dibujar:
+
+\[
+60 \text{ imágenes cada segundo}
+\]
+
+En animación, cada imagen se llama \textbf{frame}.
+\end{frame}
+
+\begin{frame}{FPS y tiempo entre frames}
+Relación ideal:
+
+\[
+dt \approx \frac{1}{\text{FPS}}
+\]
+
+\medskip
+
+Ejemplos:
+
+\[
+30\text{ FPS} \Rightarrow dt \approx 0.0333
+\]
+
+\[
+60\text{ FPS} \Rightarrow dt \approx 0.0167
+\]
+
+\[
+120\text{ FPS} \Rightarrow dt \approx 0.0083
+\]
+
+A más FPS, menor duración de cada frame.
+\end{frame}
+
+\begin{frame}{¿Qué es \(dt\)?}
+En simulación, \(dt\) significa:
+
+\[
+dt = \Delta t
+\]
+
+Es el tiempo transcurrido entre dos frames consecutivos.
+
+\medskip
+
+En Raylib se obtiene con:
+
+\[
+\texttt{GetFrameTime()}
+\]
+
+\medskip
+
+Si el frame tarda mucho, \(dt\) aumenta.  
+Si el frame tarda poco, \(dt\) disminuye.
+\end{frame}
+
+\begin{frame}{\(dt\) como puente con el tiempo real}
+El computador actualiza la escena cuadro a cuadro.
+
+\medskip
+
+Pero el movimiento físico depende del tiempo real.
+
+\medskip
+
+Por eso usamos:
+
+\[
+\Delta x = v \cdot dt
+\]
+
+donde:
+
+\begin{itemize}
+    \item \(\Delta x\): desplazamiento en un frame.
+    \item \(v\): velocidad en píxeles por segundo.
+    \item \(dt\): segundos transcurridos en ese frame.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Modelo matemático del movimiento}
+El modelo continuo de velocidad constante es:
+
+\[
+\frac{dx}{dt} = v
+\]
+
+Esto significa:
+
+\begin{itemize}
+    \item La posición cambia con el tiempo.
+    \item La velocidad \(v\) mide qué tan rápido cambia \(x\).
+\end{itemize}
+
+Si \(v=200\), el objeto debe avanzar:
+
+\[
+200 \text{ píxeles en un segundo}
+\]
+\end{frame}
+
+\begin{frame}{Actualización correcta}
+Para simular el movimiento, usamos:
+
+\[
+x_{\text{nuevo}} =
+x_{\text{actual}} + v \cdot dt
+\]
+
+Esto significa:
+
+\begin{itemize}
+    \item Tomamos la posición actual.
+    \item Calculamos cuánto debe avanzar.
+    \item Sumamos ese avance a la posición.
+\end{itemize}
+
+Esta es una forma básica del método de Euler.
+\end{frame}
+
+\begin{frame}{Movimiento sin \(dt\)}
+El movimiento incorrecto usa una constante fija:
+
+\[
+x_{\text{nuevo}} =
+x_{\text{actual}} + v \cdot c
+\]
+
+En el código:
+
+\[
+c = 0.016
+\]
+
+Esto supone artificialmente que todos los frames duran:
+
+\[
+0.016 \text{ segundos}
+\]
+
+Esto solo se parece a 60 FPS.
+\end{frame}
+
+\begin{frame}{Problema de no usar \(dt\)}
+Si el programa corre a 30 FPS, hay menos actualizaciones por segundo.
+
+\medskip
+
+Si corre a 120 FPS, hay más actualizaciones por segundo.
+
+\medskip
+
+Usando una constante fija:
+
+\[
+\text{distancia por segundo}
+=
+\text{actualizaciones} \times v \cdot c
+\]
+
+Por eso el movimiento depende de los FPS.
+\end{frame}
+
+\begin{frame}{Ejemplo sin \(dt\)}
+Supongamos:
+
+\[
+v = 200,\qquad c=0.016
+\]
+
+Avance por frame:
+
+\[
+\Delta x = 200(0.016)=3.2
+\]
+
+A 30 FPS:
+
+\[
+30(3.2)=96
+\]
+
+A 120 FPS:
+
+\[
+120(3.2)=384
+\]
+
+El objeto no se mueve igual.
+\end{frame}
+
+\begin{frame}{Movimiento con \(dt\)}
+Con \(dt\), cada frame usa su duración real:
+
+\[
+x_{\text{nuevo}} =
+x_{\text{actual}} + v \cdot dt
+\]
+
+A 30 FPS:
+
+\[
+30 \cdot 200 \cdot 0.0333 \approx 200
+\]
+
+A 120 FPS:
+
+\[
+120 \cdot 200 \cdot 0.0083 \approx 200
+\]
+
+El movimiento respeta el tiempo real.
+\end{frame}
+
+\begin{frame}{Comparación conceptual}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Caso & Fórmula & Consecuencia \\
+\hline
+Sin \(dt\) & \(x=x+v\cdot c\) & Depende de FPS \\
+\hline
+Con \(dt\) & \(x=x+v\cdot dt\) & Estable \\
+\hline
+\end{tabular}
+\end{center}
+
+\medskip
+
+\[
+dt \text{ corrige la duración real de cada frame.}
+\]
+\end{frame}
+
+\begin{frame}{Integración numérica: idea básica}
+El modelo continuo es:
+
+\[
+\frac{dx}{dt}=v
+\]
+
+Pero el computador no calcula todos los tiempos.
+
+\medskip
+
+Calcula una secuencia discreta:
+
+\[
+t_0,\; t_1,\; t_2,\; \ldots,\; t_n
+\]
+
+La separación entre dos tiempos es:
+
+\[
+\Delta t = t_{n+1}-t_n
+\]
+\end{frame}
+
+
+\begin{frame}{Lectura del programa}
+El programa compara dos modelos:
+
+\begin{itemize}
+    \item Círculo rojo: usa una constante fija.
+    \item Círculo azul: usa el \(dt\) real.
+\end{itemize}
+
+Al cambiar FPS:
+
+\begin{itemize}
+    \item El rojo cambia su rapidez visible.
+    \item El azul conserva su rapidez.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusión}
+Ideas principales:
+
+\begin{itemize}
+    \item FPS indica cuántos frames se dibujan por segundo.
+    \item \(dt\) mide cuánto duró el último frame.
+    \item Sin \(dt\), el movimiento depende de los FPS.
+    \item Con \(dt\), el movimiento respeta el tiempo real.
+    \item La fórmula \(x=x+vdt\) es integración numérica.
+    \item La integral continua produce \(x(t)=x_0+vt\).
+\end{itemize}
+\end{frame}
+
+\end{document}
