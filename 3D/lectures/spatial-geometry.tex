@@ -39,7 +39,7 @@
 
 \lstset{style=mystyle}
 
-\title{Introducción a la Geometría Espacial y Animación 3D}
+\title{Geometría Espacial y Animación 3D}
 \author{HCI}
 \date{2026}
 
@@ -758,47 +758,52 @@ La cámara puede:
 
 \end{frame}
 
+
 \section{Animación Temporal}
 
-\begin{frame}{Animación Temporal}
+\begin{frame}{Animación Temporal en 3D}
 
-La animación consiste en modificar propiedades en función del tiempo.
+Animar significa cambiar una propiedad del objeto en función del tiempo.
 
 \vspace{0.4cm}
 
-Ejemplos:
+En raylib, el tiempo se obtiene con:
+
+$$
+t = \texttt{GetTime()}
+$$
+
+\vspace{0.4cm}
+
+Ese valor puede usarse para modificar coordenadas espaciales:
+
+$$
+\vec{p}(t) = (x(t),y(t),z(t))
+$$
+
+\vspace{0.4cm}
+
+En esta sección se estudian cuatro movimientos básicos:
 
 \begin{itemize}
     \item movimiento senoidal,
-    \item rebotes,
-    \item órbitas,
-    \item trayectorias.
+    \item rebote,
+    \item órbita,
+    \item trayectoria.
 \end{itemize}
 
 \end{frame}
 
+\begin{frame}{Movimiento Senoidal: Noción Matemática}
 
-\begin{frame}{Movimiento Senoidal}
-
-El movimiento senoidal modela oscilaciones periódicas.
+El movimiento senoidal describe una oscilación suave y periódica.
 
 \vspace{0.4cm}
 
-Ejemplos físicos:
-
-\begin{itemize}
-    \item péndulos,
-    \item ondas,
-    \item vibraciones,
-    \item movimiento armónico simple.
-\end{itemize}
-
-\vspace{0.5cm}
-
-La posición vertical del objeto cambia según:
+Para mover un objeto verticalmente se puede usar:
 
 $$
-y(t)=A\sin(\omega t)
+y(t)=y_0 + A\sin(\omega t)
 $$
 
 \vspace{0.4cm}
@@ -806,125 +811,244 @@ $$
 donde:
 
 \begin{itemize}
-    \item $y(t)$ representa la posición vertical.
-    \item $A$ representa la amplitud máxima.
-    \item $\omega$ representa la frecuencia angular.
-    \item $t$ representa el tiempo.
+    \item $y(t)$ es la altura del objeto en el instante $t$.
+    \item $y_0$ es la altura base o posición media.
+    \item $A$ es la amplitud del movimiento.
+    \item $\omega$ controla la rapidez de la oscilación.
+    \item $t$ es el tiempo de animación.
 \end{itemize}
 
 \end{frame}
 
-\begin{frame}{Interpretación Geométrica del Movimiento Senoidal}
 
-La función seno produce un movimiento suave de subida y bajada.
+\begin{frame}{Movimiento Sinoidal: Interpretación Matemática}
 
-\vspace{0.5cm}
-
-Características:
-
-\begin{itemize}
-    \item cuando:
-    
-    $$
-    \sin(\omega t)=1
-    $$
-    
-    el objeto alcanza la altura máxima.
-    
-    \vspace{0.3cm}
-    
-    \item cuando:
-    
-    $$
-    \sin(\omega t)=-1
-    $$
-    
-    el objeto alcanza la altura mínima.
-    
-    \vspace{0.3cm}
-    
-    \item el movimiento se repite continuamente.
-\end{itemize}
-
-\vspace{0.5cm}
-
-En raylib, este valor puede utilizarse para modificar dinámicamente la coordenada \(Y\) de un objeto.
+\begin{center}
+    \includegraphics[width=0.95\textwidth]{movimiento-sinoidal.png}
+\end{center}
 
 \end{frame}
 
 
-\begin{frame}{Movimiento Orbital}
+\begin{frame}[fragile]{Movimiento Senoidal en C++/raylib}
 
-El movimiento orbital describe trayectorias circulares alrededor de un centro.
+\begin{lstlisting}[language=C++,basicstyle=\ttfamily\scriptsize]
+float t = (float)GetTime();
 
-\vspace{0.5cm}
-
-Se modela utilizando funciones trigonométricas:
-
-$$
-x(t)=r\cos(t)
-$$
-
-$$
-z(t)=r\sin(t)
-$$
-
-\vspace{0.5cm}
-
-donde:
-
-\begin{itemize}
-    \item $r$ representa el radio de la órbita.
-    \item $t$ representa el tiempo.
-    \item $x(t)$ y $z(t)$ representan la posición del objeto.
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Interpretación Geométrica del Movimiento Orbital}
-
-El objeto se desplaza alrededor de un punto central.
-
-\vspace{0.5cm}
-
-Geométricamente:
-
-\begin{itemize}
-    \item el coseno controla el desplazamiento horizontal.
-    \item el seno controla el desplazamiento en profundidad.
-\end{itemize}
-
-\vspace{0.5cm}
-
-La combinación simultánea de ambas funciones genera una circunferencia.
-
-\vspace{0.5cm}
-
-En gráficos 3D este movimiento se utiliza para:
-
-\begin{itemize}
-    \item planetas,
-    \item satélites,
-    \item cámaras orbitales,
-    \item sistemas de animación.
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}[fragile]{Animación en raylib}
-
-\begin{lstlisting}[language=C++]
-float t = GetTime();
-
-float x = cosf(t) * 4.0f;
-float z = sinf(t) * 4.0f;
+float y = 2.0f + sinf(t * 2.0f) * 1.5f;
 
 DrawSphere(
-    {x, 1.0f, z},
-    0.5f,
+    { -6.0f, y, 4.0f },
+    0.45f,
+    BLUE
+);
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+Interpretación:
+
+\begin{itemize}
+    \item \texttt{2.0f} es la altura base.
+    \item \texttt{1.5f} es la amplitud.
+    \item \texttt{t * 2.0f} controla la velocidad de oscilación.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Rebote: Noción Matemática}
+
+Un rebote puede modelarse invirtiendo la velocidad cuando el objeto alcanza un límite.
+
+\vspace{0.4cm}
+
+Actualización de la posición:
+
+$$
+y_{k+1}=y_k+v_y
+$$
+
+\vspace{0.3cm}
+
+Condición de rebote:
+
+$$
+\text{si } y>y_{\max} \text{ o } y<y_{\min},
+\quad v_y \leftarrow -v_y
+$$
+
+\vspace{0.4cm}
+
+Idea principal:
+
+\begin{itemize}
+    \item la posición cambia por la velocidad,
+    \item al tocar un límite, la velocidad cambia de signo,
+    \item ese cambio de signo produce el rebote.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Rebote en C++/raylib}
+
+\begin{lstlisting}[language=C++,basicstyle=\ttfamily\scriptsize]
+reboteY += velocidadY;
+
+if (reboteY > 4.0f || reboteY < 1.0f)
+{
+    velocidadY *= -1.0f;
+}
+
+DrawSphere(
+    { -3.0f, reboteY, 4.0f },
+    0.45f,
     RED
 );
 \end{lstlisting}
+
+\vspace{0.3cm}
+
+Interpretación:
+
+\begin{itemize}
+    \item \texttt{reboteY} representa la altura actual.
+    \item \texttt{velocidadY} indica cuánto cambia la altura en cada cuadro.
+    \item Al multiplicar por \texttt{-1.0f}, el movimiento se invierte.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Órbita: Noción Matemática}
+
+Una órbita circular en el plano $XZ$ se obtiene usando seno y coseno.
+
+\vspace{0.4cm}
+
+Si el centro de la órbita es $(c_x,c_z)$, entonces:
+
+$$
+x(t)=c_x+r\cos(t)
+$$
+
+$$
+z(t)=c_z+r\sin(t)
+$$
+
+\vspace{0.4cm}
+
+donde:
+
+\begin{itemize}
+    \item $r$ es el radio de la órbita.
+    \item $c_x$ y $c_z$ son las coordenadas del centro.
+    \item $x(t)$ y $z(t)$ cambian con el tiempo.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Órbita: Interpretación Matemática}
+
+\begin{center}
+    \includegraphics[width=0.95\textwidth]{orbita.png}
+\end{center}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Órbita en C++/raylib}
+
+\begin{lstlisting}[language=C++,basicstyle=\ttfamily\scriptsize]
+float t = (float)GetTime();
+float radio = 2.0f;
+
+float orbitaX = cosf(t) * radio;
+float orbitaZ = sinf(t) * radio;
+
+DrawSphere(
+    { 3.0f + orbitaX, 1.0f, 4.0f + orbitaZ },
+    0.45f,
+    GREEN
+);
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+Interpretación:
+
+\begin{itemize}
+    \item \texttt{cosf(t)} controla el desplazamiento en $X$.
+    \item \texttt{sinf(t)} controla el desplazamiento en $Z$.
+    \item \texttt{radio} determina el tamaño de la órbita.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Trayectorias: Noción Matemática}
+
+Una trayectoria describe el camino que sigue un objeto en el espacio.
+
+\vspace{0.4cm}
+
+Puede representarse como una función vectorial:
+
+$$
+\vec{p}(t)=(x(t),y(t),z(t))
+$$
+
+\vspace{0.4cm}
+
+Ejemplo de trayectoria ondulada sobre el plano $XZ$:
+
+$$
+x(t)=x_0 + vt
+$$
+
+$$
+z(t)=A\sin(\omega t)
+$$
+
+\vspace{0.3cm}
+
+El objeto avanza sobre $X$ mientras oscila en profundidad sobre $Z$.
+
+\end{frame}
+
+\begin{frame}{Trayectoria: Interpretación Matemática}
+
+\begin{center}
+    \includegraphics[width=0.95\textwidth]{trayectoria.png}
+\end{center}
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Trayectoria en C++/raylib}
+
+\begin{lstlisting}[language=C++,basicstyle=\ttfamily\scriptsize]
+float t = (float)GetTime();
+
+float trayectoriaX = -2.5f + fmodf(t * 1.5f, 5.0f);
+float trayectoriaZ = sinf(t * 3.0f) * 1.2f;
+
+DrawSphere(
+    { 9.0f + trayectoriaX, 1.0f, 4.0f + trayectoriaZ },
+    0.45f,
+    ORANGE
+);
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+Interpretación:
+
+\begin{itemize}
+    \item \texttt{trayectoriaX} produce avance horizontal.
+    \item \texttt{fmodf(...)} reinicia el recorrido.
+    \item \texttt{trayectoriaZ} genera la ondulación lateral.
+\end{itemize}
 
 \end{frame}
 
